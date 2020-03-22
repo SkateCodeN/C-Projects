@@ -1,0 +1,191 @@
+public partial class Form1 : Form
+    {
+        //BEcause Label by itself presents ambiguity with the Excel Interlop Service (there is a Label keyword in Interlop.Excel as well)
+        System.Windows.Forms.Label[] labelArray;
+        // ****Hardcoded String path to list of devices
+        string FilePath = @"";
+        int Count;
+        //Master Array for WS objects
+        WS[] MicrosWS;
+
+        public Form1()
+        {
+            InitializeComponent();
+
+        }
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            int x = 6;
+            int y = 29;
+            int height = 13;
+            int length = 600;
+            //As the form loads populate a range of labels
+
+            #region Testing Reg
+            //For testing
+            /* Testing placing labels in the form to grow dynamically as list grew in Excel file
+            for (int a = 0; a < labelArray.Length; a++)
+            {
+                labelArray[a] = new System.Windows.Forms.Label();
+                labelArray[a].Location = new System.Drawing.Point(x, y);
+                labelArray[a].Size = new Size(length, height);
+                labelArray[a].Text = string.Format("Array num {0} says hello", a.ToString());
+                tabControl1.TabPages[0].Controls.Add(labelArray[a]);
+                if (labelArray.Length > 27)
+                {
+                    tabPage1.AutoScroll = true;
+                    if (a % 5 == 0 && a != 0)
+                    {
+                        labelArray[a].ForeColor = Color.Green;
+                    }
+                    else if (a % 2 == 0 && a != 0)
+                    {
+                        labelArray[a].ForeColor = Color.Red;
+                    }
+                    else if( a%2 ==0 && a%5 ==0 && a != 0)
+                    {
+                        labelArray[a].ForeColor = Color.Blue;
+                    }
+
+                }
+                else if (a % 5 == 0 && a !=0)
+                {
+                    labelArray[a].ForeColor = Color.Green;
+                }
+                else if (a % 2 == 0 && a != 0)
+                {
+                    labelArray[a].ForeColor = Color.Red;
+                }
+                else if (a % 2 == 0 && a % 5 == 0 && a != 0)
+                {
+                    labelArray[a].ForeColor = Color.Blue;
+                }
+
+                y += 14;
+            }
+            */
+            #endregion
+
+            //Here is where we load all of the info
+            //examples
+            string[] wsNames = fillllArray(FilePath, "A2", 1);
+            string[] WsStat = fillllArray(FilePath, "B2", 1);
+            MicrosWS = new WS[Count];
+            labelArray = new System.Windows.Forms.Label[Count];
+
+            for (int a=1; a< Count; a++)
+            {
+                MicrosWS[a] = new WS(wsNames[a], WsStat[a].ToLower());
+                labelArray[a] = new System.Windows.Forms.Label();
+                labelArray[a].Location = new System.Drawing.Point(x, y);
+                labelArray[a].Size = new Size(length, height);
+                labelArray[a].Text = string.Format("{0 }:   {1}   {2}   {3}", a.ToString(), MicrosWS[a].Name, MicrosWS[a].ipaddress, MicrosWS[a].Location);
+                labelArray[a].Name = "label" + a;
+                labelArray[a].Click += new EventHandler(lblArr_Click);
+                tabControl1.TabPages[0].Controls.Add(labelArray[a]);
+                y += 14;
+            }
+
+
+
+
+        }
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblArr_Click(object sender, EventArgs e)
+        {
+            int x, y, h, w;
+            x = 374;
+            y = 6;
+            h = 23;
+            w = 86;
+            int top = 40;
+            System.Windows.Forms.Button[] optionButtons = new System.Windows.Forms.Button[4];
+
+            string[] bNames = new string[]{ "Restart", "Shutdown", "UNC", "RDP" };
+            var label = sender as System.Windows.Forms.Label;
+            //MessageBox.Show(label.Name.ToString());
+            for (int a = 0; a < 4; a++)
+            {
+                optionButtons[a] = new System.Windows.Forms.Button();
+                //optionButtons[a].Location = new System.Drawing.Point(x, y);
+                optionButtons[a].Size = new Size(w, h);
+                optionButtons[a].Name = bNames[a];
+                optionButtons[a].Text = bNames[a];
+                optionButtons[a].Top = top;
+                optionButtons[a].Left = 400;
+                top += optionButtons[a].Height+ 10;
+                tabControl1.TabPages[0].Controls.Add(optionButtons[a]);
+                y += 30;
+               // h += 20;
+            }
+        }
+        // Code to read from an Excel form. This was borrowed from a post online
+        private string[] fillllArray(string FN, string StartRange, int WorksheetNumber)
+        {
+            //limit of array will be set to 100
+            int arraynumber = 100;
+
+            
+            string[] tempArray = new string[arraynumber];
+
+
+            var xlApp = new Microsoft.Office.Interop.Excel.Application();
+            var wb = xlApp.Workbooks.Open(FN, ReadOnly: false);
+            //Is this to pop up the WorkSheet
+            xlApp.Visible = false;
+            //It was set to true but I placed it to be false
+
+            //This statement below takes a value of 
+            var ws = wb.Worksheets[WorksheetNumber] as Worksheet;
+            var r = ws.Range[StartRange].Resize[arraynumber, 1];
+            var array = r.Value;
+
+            //This is to get the cells starting at B2
+           // var r2 = ws.Range["B2"].Resize[25, 1];
+            //var array2 = r2.Value2;
+
+            // array is object[1..100,1..1]
+            for (int i = 1; i <= arraynumber; i++)
+            {
+               // var text = array[i, 1] as string;
+
+                if (array[i, 1] != null)
+                {
+                    tempArray[i] = array[i, 1].ToString();
+                    if (array.Length > 27)
+                    {
+                        tabPage1.AutoScroll = true;
+                    }
+
+                    //Debug.Print(text);
+                }
+                
+                else
+                {
+                    //In the case that we reach a blank cell in Excel, exit the
+                    //if condition and set the COunt variable to the 
+                    Count = i;
+
+                    //Lets trim our tempArray so that all array locations that contain nothing are eraased
+                    
+                    break;
+
+                }
+                
+            }
+
+            //Lets trim our tempArray so that all array locations that contain nothing are eraased
+           // tempArray = tempArray.Where(x => x != null).ToArray();
+            return tempArray;
+        }
+    }
