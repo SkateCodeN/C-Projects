@@ -1,0 +1,211 @@
+class Device
+    {
+
+        //This what the device class knows
+        public string Name { get; set; }
+
+        private string IpAddress;
+        public string ipaddress { get { return IpAddress; } set { IpAddress = value; } }
+        public string Location;
+        public bool status;
+        PictureBox Picture;
+        Label theLabel;
+
+        //This loads a 2D array of all the locations and associated IP's of the WS
+        //This is taken from EMC
+
+        //Lets build our constructor here
+        //Passes the Name, Location and status of on or off, default is off
+        public Device(string name, bool stat, Label dLabel)
+        {
+            Name = name;
+            //Get the IP of the device as it is initialized
+            IpAddress = GetIP();
+
+            //Pass me the status of the WS, is it in the office or out in the field?
+            status = stat;
+
+            //Also test to see that the ping is successful and not faulty by 
+            //seeing if you can reach it out with a UNC path
+
+            //If the status is active then look for it and cross reference it with
+            //the 2d array to find if its in emc
+
+
+            theLabel = dLabel;
+        }
+
+
+        //This is what the Device Class can do 
+
+        //GEt a ping reponce of wether the device is up and running
+        public bool GetPing()
+        {
+            bool pingable = false;
+            Ping pinger = new Ping();
+            
+                try
+                {
+                    PingReply reply = pinger.Send(IpAddress);
+                    pingable = reply.Status == IPStatus.Success;
+
+
+
+                }
+                catch (PingException)
+                {
+                    // Discard PingExceptions and return false;
+                }
+            
+            return pingable;
+            //Return True if I am able to ping device
+
+        }
+
+        //Baased on the IP, the get location method
+        //returns the name(location) associated in EMC
+
+        //GR 6-13 needs work, default it returns false
+
+        public virtual string GetLocation()
+        {
+            //Gets Location of WS
+            //After much struggle i found it to be better if I flipped the 2D array to have [ip,location]
+            //Since this code will return better 
+            string a = "";
+            return a;
+        }
+
+        //From DNS this function/ method gets the IP associated with the WS
+
+        /// <summary>
+        /// Get the ip of the Device
+        /// </summary>
+        /// <returns></returns>
+        public string GetIP()
+        {
+            //Get Ip of WS
+            try
+            {
+                var address = Dns.GetHostAddresses(Name)[0];
+
+
+                return address.ToString();
+            }
+
+            catch (Exception e)
+            {
+                return " [Ip not found] ";
+            }
+        }
+
+        /// <summary>
+        /// Update the Label associated with the device, by ping
+        /// </summary>
+        public void UpdateLabel()
+        {
+
+            if (GetPing())
+            {
+                theLabel.Text = "Good Ping";
+                theLabel.ForeColor = System.Drawing.Color.Green;
+
+            }
+
+            else if (!status)
+            {
+                theLabel.Text = "Not in Net";
+                theLabel.ForeColor = System.Drawing.Color.Blue;
+            }
+            else
+            {
+                theLabel.Text = "Bad   Ping";
+
+                theLabel.ForeColor = System.Drawing.Color.Red;
+            }
+
+        }
+
+        /// <summary>
+        /// Continuous ping for the Device
+        /// </summary>
+        public void contPing()
+        {
+            try
+            {
+                ProcessStartInfo sI = new ProcessStartInfo();
+                sI.FileName = "ping.exe";
+                sI.Arguments = String.Format("{0} /t", ipaddress);
+                Process.Start(sI);
+            }
+            catch (Exception deus)
+            {
+
+            }
+        }
+
+
+
+
+        ////////////////////////////////////////////////////////////////////////
+        ///TEST REGION
+        ///////////////////////////////////////////////////////////////////////
+        public void setIP(string IPAddress)
+        {
+            string SubnetMask = "255.255.252.0";
+            string Gateway = "10.26.8.125";
+            ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration");
+            ManagementObjectCollection objMOC = objMC.GetInstances();
+
+
+            foreach (ManagementObject objMO in objMOC)
+            {
+
+                if (!(bool)objMO["IPEnabled"])
+                    continue;
+
+
+
+                try
+                {
+                    ManagementBaseObject objNewIP = null;
+                    ManagementBaseObject objSetIP = null;
+                    ManagementBaseObject objNewGate = null;
+
+
+                    objNewIP = objMO.GetMethodParameters("EnableStatic");
+                    objNewGate = objMO.GetMethodParameters("SetGateways");
+
+
+
+                    //Set DefaultGateway
+                    objNewGate["DefaultIPGateway"] = new string[] { Gateway };
+                    objNewGate["GatewayCostMetric"] = new int[] { 1 };
+
+
+                    //Set IPAddress and Subnet Mask
+                    objNewIP["IPAddress"] = new string[] { IPAddress };
+                    objNewIP["SubnetMask"] = new string[] { SubnetMask };
+
+                    objSetIP = objMO.InvokeMethod("EnableStatic", objNewIP, null);
+                    objSetIP = objMO.InvokeMethod("SetGateways", objNewGate, null);
+
+
+
+                    MessageBox.Show(
+                       "Updated IPAddress, SubnetMask and Default Gateway!");
+
+
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Unable to Set IP : " + ex.Message);
+                }
+            }
+            //////////////////////////////////////////////////////////////////////
+
+
+        }
+
+    }
