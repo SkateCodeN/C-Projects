@@ -1,0 +1,10 @@
+Hello there!
+
+These files represent my love for programming, a beautiful tool designed to help make our life's easier. The first project reflects,
+my love for efficiency. My role was that of an IT Analyst, overlooking a network in a resort. We had an MDF with about 5 servers, 
+20 virtual servers and quite a bit of switches. We also had about 10 or so IDF's, so no, this network was not small. The property itself was 
+over 1000 sq ft. So sometimes, walking around to solve a problem took some time. I decided to use my experience of C# to create my 
+own network monitor, independantly monitoring over 100 devices. Now, you may ask, there are already tools in place to do this exact thing.
+Why reinvent the wheel? Well, the simple answer is this, third party software was a no-no in our env. So I asked nicely and was able
+to work on this project to make my life easier. 
+
