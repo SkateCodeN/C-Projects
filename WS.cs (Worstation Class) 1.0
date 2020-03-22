@@ -1,0 +1,107 @@
+class WS:Device
+    {
+        //This contructor is needed to pass the necessary info to the Device class
+        public WS(string name, bool stat, Label aLabel) : base(name, stat, aLabel)
+        {
+            
+            
+            if (stat)
+            {
+                Location = GetLocation();
+            }
+            else
+            {
+                Location = " [Office] ";
+                
+            }
+        }
+
+
+        /// <summary>
+        /// Shuts down the WS
+        /// </summary>
+        public void Shutdown()
+        {
+            //Shutdown WS
+            
+            try
+            {
+                Process.Start("shutdown", @"-m" + @" \\" + Name + " -s -f -t 5");
+            }
+            catch (Exception deus)
+            {
+                MessageBox.Show(deus.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Restart the WS
+        /// </summary>
+        public void Restart()
+        {
+            //Restart WS
+            try
+            {
+                Process.Start("shutdown", @"-m" + @" \\" + Name + " -r -f -t 5");
+            }
+            catch (Exception deus)
+            {
+                MessageBox.Show(deus.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Open UNC Path to all Users desktop
+        /// </summary>
+        public void OpenUNC()
+        {
+            //Opens UNC to WS
+            
+            try
+            {
+                Process.Start(@"\\" + this.Name + @"\C$\Documents and Settings\All Users\Desktop");
+            }
+            catch (Exception deus)
+            {
+                MessageBox.Show(deus.ToString());
+            }
+
+        }
+
+
+        /// <summary>
+        /// Virtual Method Get Location of WS
+        /// </summary>
+        /// <returns></returns>
+        public override string GetLocation()
+        {
+
+            string index = "";
+            for (int i = 0; i < MicrosStations.GetLength(0); i++)
+            {
+                if (MicrosStations[i, 0] == ipaddress)
+                {
+                    index = MicrosStations[i, 1];
+
+                }
+
+
+
+            }
+            return index;
+
+            
+
+        }
+
+        /// <summary>
+        /// Start an RDP session based on the Name of the WS
+        /// </summary>
+        public void StartRDP()
+        {
+            ProcessStartInfo sI = new ProcessStartInfo();
+            sI.FileName = "mstsc.exe";
+            sI.Arguments = String.Format("/v  {0}", Name);
+            Process.Start(sI);
+        }
+}
